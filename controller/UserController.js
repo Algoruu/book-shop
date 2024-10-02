@@ -140,18 +140,74 @@ const passwordResetPage = (req, res) => {
     // 클라이언트에 비밀번호 재설정 HTML 페이지 제공
     res.send(`
         <html>
+            <head>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        background-color: #f7f7f7;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                        margin: 0;
+                    }
+                    .container {
+                        background-color: #fff;
+                        padding: 20px;
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                        border-radius: 8px;
+                        width: 300px;
+                    }
+                    h1 {
+                        text-align: center;
+                        color: #333;
+                    }
+                    label {
+                        display: block;
+                        margin-bottom: 8px;
+                        font-weight: bold;
+                    }
+                    input {
+                        width: 100%;
+                        padding: 10px;
+                        margin-bottom: 15px;
+                        border: 1px solid #ccc;
+                        border-radius: 4px;
+                    }
+                    button {
+                        width: 100%;
+                        padding: 10px;
+                        background-color: #4CAF50;
+                        color: white;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    }
+                    button:hover {
+                        background-color: #45a049;
+                    }
+                    .error {
+                        color: red;
+                        font-size: 14px;
+                        text-align: center;
+                    }
+                </style>
+            </head>
             <body>
-                <h1>비밀번호 재설정</h1>
-                <form method="POST" action="/users/reset-password">
-                    <input type="hidden" name="token" value="${token}" />
-                    <label for="newPassword">새 비밀번호:</label>
-                    <input type="password" name="newPassword" required />
-                    <br />
-                    <label for="confirmPassword">새 비밀번호 확인:</label>
-                    <input type="password" name="confirmPassword" required />
-                    <br />
-                    <button type="submit">비밀번호 재설정</button>
-                </form>
+                <div class="container">
+                    <h1>비밀번호 재설정</h1>
+                    <form method="POST" action="/users/reset-password">
+                        <input type="hidden" name="token" value="${token}" />
+                        
+                        <label for="newPassword">새 비밀번호:</label>
+                        <input type="password" name="newPassword" required />
+                        
+                        <label for="confirmPassword">새 비밀번호 확인:</label>
+                        <input type="password" name="confirmPassword" required />
+                        
+                        <button type="submit">비밀번호 재설정</button>
+                    </form>
+                </div>
             </body>
         </html>
     `);
@@ -192,9 +248,6 @@ const passwordReset = (req, res) => {
         });
     });
 };
-
-
-
 
 module.exports = {
     join,
