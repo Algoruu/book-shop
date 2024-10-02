@@ -41,15 +41,16 @@ const validatePasswordResetRequest = [
 ];
 
 const validatePasswordReset = [
-    body('token').notEmpty().withMessage('유효한 토큰을 제공해주세요'),
+    body('email').notEmpty().isEmail().withMessage('유효한 이메일을 입력해주세요'),
     body('newPassword').notEmpty().isString().withMessage('새로운 비밀번호를 입력해주세요'),
-    validate
+    validate 
 ];
+
 
 router.post('/join', validateRegister, join); // 회원가입
 router.post('/login', validateLogin, login); // 로그인
 router.post('/password-reset-request', validatePasswordResetRequest, passwordResetRequest); // 비밀번호 초기화 요청
-router.put('/reset-password', validatePasswordReset, passwordReset); // 비밀번호 초기화
+router.post('/reset-password', validatePasswordReset, passwordReset); // 비밀번호 초기화
 router.get('/reset-password', passwordResetPage); // 비밀번호 재설정 페이지 제공 라우트
 
 module.exports = router;

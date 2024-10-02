@@ -104,7 +104,7 @@ const passwordResetRequest = (req, res) => {
             }
         });
 
-        const resetLink = `http://localhost:9999/reset-password?token=${resetToken}`;
+        const resetLink = `http://localhost:9999/users/reset-password?token=${resetToken}`;
         const mailOptions = {
             from: process.env.SMTP_USER,
             to: email,
@@ -154,21 +154,39 @@ const passwordResetPage = (req, res) => {
 
 
 const passwordReset = (req, res) => {
-    const { token, newPassword } = req.body;
+    const { email, newPassword } = req.body;
 
-    jwt.verify(token, process.env.PRIVATE_KEY, (err, decoded) => {
+    // 이메일이 요청에 포함되어 있는지 확인
+    if (!email || !newPassword) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ message: "이메일과 새 비밀번호를 입력해주세요." });
+    }
+
+    let sql = 'SELECT * FROM users WHERE email = ?';
+
+    conn.query(sql, [email], (err, results) => {
         if (err) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: "유효하지 않거나 만료된 토큰입니다." });
+            console.error(err); 
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "서버 오류가 발생했습니다.",
+                error: err.message
+            });
         }
 
-        const email = decoded.email;
-        let sql = 'UPDATE users SET password = ?, salt=? WHERE email = ?';
+        if (results.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({ message: '해당 이메일을 가진 사용자를 찾을 수 없습니다.' });
+        }
 
-        //암호화된 비밀번호와 salt값을 같이 DB에 저장
+        // 사용자를 찾았으면 비밀번호 재설정
+        const user = results[0];
+
+        // 암호화된 비밀번호와 salt 값을 함께 DB에 저장
         const salt = crypto.randomBytes(10).toString('base64');
-        const hashPassword = crypto.pbkdf2Sync(password, salt, 10000, 10, 'sha512').toString('base64');
+        const hashPassword = crypto.pbkdf2Sync(newPassword, salt, 10000, 10, 'sha512').toString('base64');
 
-        conn.query(sql, [newPassword, salt, email], (err, results) => {
+        // 업데이트 SQL
+        let updateSql = 'UPDATE users SET password = ?, salt = ? WHERE email = ?';
+
+        conn.query(updateSql, [hashPassword, salt, email], (err, updateResults) => {
             if (err) {
                 console.error(err);
                 return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -177,7 +195,7 @@ const passwordReset = (req, res) => {
                 });
             }
 
-            if (results.affectedRows > 0) {
+            if (updateResults.affectedRows > 0) {
                 res.status(StatusCodes.OK).json({ message: '비밀번호가 성공적으로 초기화되었습니다.' });
             } else {
                 res.status(StatusCodes.NOT_FOUND).json({ message: '해당 이메일을 찾을 수 없습니다.' });
@@ -185,6 +203,7 @@ const passwordReset = (req, res) => {
         });
     });
 };
+
 
 module.exports = {
     join,
