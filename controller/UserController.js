@@ -129,6 +129,7 @@ const passwordResetRequest = (req, res) => {
     });
 };
 
+
 const passwordResetPage = (req, res) => {
     const { token } = req.query;
 
@@ -145,6 +146,10 @@ const passwordResetPage = (req, res) => {
                     <input type="hidden" name="token" value="${token}" />
                     <label for="newPassword">새 비밀번호:</label>
                     <input type="password" name="newPassword" required />
+                    <br />
+                    <label for="confirmPassword">새 비밀번호 확인:</label>
+                    <input type="password" name="confirmPassword" required />
+                    <br />
                     <button type="submit">비밀번호 재설정</button>
                 </form>
             </body>
@@ -154,36 +159,20 @@ const passwordResetPage = (req, res) => {
 
 
 const passwordReset = (req, res) => {
-    const { email, newPassword } = req.body;
+    const { token, newPassword } = req.body;
 
-    // 이메일이 요청에 포함되어 있는지 확인
-    if (!email || !newPassword) {
-        return res.status(StatusCodes.BAD_REQUEST).json({ message: "이메일과 새 비밀번호를 입력해주세요." });
-    }
-
-    let sql = 'SELECT * FROM users WHERE email = ?';
-
-    conn.query(sql, [email], (err, results) => {
+    // JWT 토큰 검증
+    jwt.verify(token, process.env.PRIVATE_KEY, (err, decoded) => {
         if (err) {
-            console.error(err); 
-            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-                message: "서버 오류가 발생했습니다.",
-                error: err.message
-            });
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "유효하지 않거나 만료된 토큰입니다." });
         }
 
-        if (results.length === 0) {
-            return res.status(StatusCodes.NOT_FOUND).json({ message: '해당 이메일을 가진 사용자를 찾을 수 없습니다.' });
-        }
-
-        // 사용자를 찾았으면 비밀번호 재설정
-        const user = results[0];
+        const email = decoded.email;
 
         // 암호화된 비밀번호와 salt 값을 함께 DB에 저장
         const salt = crypto.randomBytes(10).toString('base64');
         const hashPassword = crypto.pbkdf2Sync(newPassword, salt, 10000, 10, 'sha512').toString('base64');
 
-        // 업데이트 SQL
         let updateSql = 'UPDATE users SET password = ?, salt = ? WHERE email = ?';
 
         conn.query(updateSql, [hashPassword, salt, email], (err, updateResults) => {
@@ -203,6 +192,8 @@ const passwordReset = (req, res) => {
         });
     });
 };
+
+
 
 
 module.exports = {
