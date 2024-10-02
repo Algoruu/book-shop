@@ -12,6 +12,8 @@ const likeRouter = require('./routes/likes');
 const cartRouter = require('./routes/carts');
 const orderRouter = require('./routes/orders');
 
+app.use(express.json());
+
 app.use("/users", userRouter);
 app.use("/books", bookRouter);
 app.use("/likes", likeRouter);
