@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {addToCart, getCartItems, removeCartItem} = require('../controller/CartController')
+const {addToCart, getCartItems, removeCartItem} = require('../controller/CartController');
 
 router.use(express.json());
 
