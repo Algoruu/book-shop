@@ -53,6 +53,7 @@ const login = (req, res) => {
         // => DB 비밀번호랑 비교
         if (loginUser && loginUser.password === hashPassword) {
             const token = jwt.sign({
+                id : loginUser.id,
                 email: loginUser.email
             }, process.env.PRIVATE_KEY, {
                 expiresIn: '5m',
@@ -60,6 +61,7 @@ const login = (req, res) => {
             });
 
             res.cookie("token", token, { httpOnly: true });
+            console.log(token);
             res.status(StatusCodes.OK).json({ 
                 message: `${loginUser.email}님, 로그인이 되었습니다!`,
                 results
