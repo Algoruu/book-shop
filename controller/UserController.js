@@ -19,16 +19,19 @@ const join = (req, res) => {
     conn.query(sql, values, (err, results) => {
         if (err) {
             console.error(err);
-            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            return res.status(StatusCodes.BAD_REQUEST).json({
                 message: "서버 오류로 인해 회원가입에 실패했습니다.",
                 error: err.message
             });
         }
 
-        res.status(StatusCodes.CREATED).json({
-            message: "회원가입이 완료되었습니다.",
-            results
-        });
+        if(results.affectedRows) {
+            return res.status(StatusCodes.CREATED).json({
+                message: "회원가입이 완료되었습니다.",
+                results
+            });
+        } else
+            return res.status(StatusCodes.BAD_REQUEST).end();
     });
 };
 

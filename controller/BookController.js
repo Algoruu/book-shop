@@ -35,12 +35,18 @@ const allBooks = (req, res) => {
         (err, results) => {
             if (err) {
                 console.error(err);
-        //         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end();
+                return res.status(StatusCodes.BAD_REQUEST).end();
             }
             console.log(results);
             
-        if(results.length)    
+        if(results.length){   
+            results.map(function(result) {
+                result.pubDate = result.pub_date;
+                delete result.pub_date;
+            });
+
             allBooksRes.books = results;
+        } 
         else
             return res.status(StatusCodes.NOT_FOUND).end();
     })
@@ -85,11 +91,13 @@ const bookDetail = (req, res) => {
         getBookDetails(book_id, authorization, (err, book) => {
             if (err) {
                 console.error(err);
-                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).end();
+                return res.status(StatusCodes.BAD_REQUEST).end();
             }
 
             if (book) {
                 return res.status(StatusCodes.OK).json(book);
+
+                
             } else {
                 return res.status(StatusCodes.NOT_FOUND).end();
             }
